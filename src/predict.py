@@ -15,9 +15,7 @@ def predict_groundwater_level(
     dissolved_oxygen,
     date
 ):
-    """
-    Predict groundwater level for given environmental conditions.
-    """
+
 
     input_df = pd.DataFrame({
         "Date": [date],

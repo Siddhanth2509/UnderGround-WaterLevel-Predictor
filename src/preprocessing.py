@@ -6,14 +6,7 @@ from sklearn.impute import SimpleImputer
 
 
 def load_and_preprocess_data(csv_path, scale_for_linear=False, training=True):
-    """
-    Loads and preprocesses groundwater dataset.
 
-    Parameters:
-    - csv_path: path to CSV file
-    - scale_for_linear: whether scaling is needed
-    - training: True if target column exists
-    """
 
     df = pd.read_csv(csv_path)
 
