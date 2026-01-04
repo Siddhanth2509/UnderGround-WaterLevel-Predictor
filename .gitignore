@@ -1,0 +1,16 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Model artifacts
+model/
+*.pkl
+
+# Temporary files
+temp_input.csv
+
+# Personal / large files
+*.pdf
+
+# Environment
+.env

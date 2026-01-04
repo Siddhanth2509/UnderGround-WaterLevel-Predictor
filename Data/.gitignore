@@ -1,6 +1,0 @@
-__pycache__/
-*.pyc
-model/
-temp_input.csv
-.env
-*.pdf
