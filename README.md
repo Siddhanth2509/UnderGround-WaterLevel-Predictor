@@ -76,11 +76,19 @@ R² : -3.774
 A simpler model generalized better due to limited and noisy environmental data.
 
 ---
+## ▶️ How to Run
+
+### Train the model
+```bash
+python src/train_model.py
+
 ➡️ Linear Regression was selected as it generalized better on limited and noisy environmental data.
 
 ▶️ How to Run the Project
+
 1️⃣ Install dependencies
 pip install -r requirements.txt
+
 
 2️⃣ Train the model
 python src/train_model.py
@@ -153,9 +161,3 @@ Reproducible and deployable ML workflows
 👤 Author
 
 Siddhanth Sharma
-
-## ▶️ How to Run
-
-### Train the model
-```bash
-python src/train_model.py
