@@ -76,6 +76,83 @@ R² : -3.774
 A simpler model generalized better due to limited and noisy environmental data.
 
 ---
+➡️ Linear Regression was selected as it generalized better on limited and noisy environmental data.
+
+▶️ How to Run the Project
+1️⃣ Install dependencies
+pip install -r requirements.txt
+
+2️⃣ Train the model
+python src/train_model.py
+
+
+This will:
+
+Train the model
+
+Save the trained model and scaler in the model/ directory
+
+3️⃣ Run prediction
+python src/predict.py
+
+
+Example output:
+
+Predicted Groundwater Level: 3.541 meters
+
+🎛️ Expected User Inputs (for UI)
+
+The prediction system is designed to work with:
+
+Date (for seasonal features)
+
+Temperature (°C)
+
+Rainfall (mm)
+
+pH value
+
+Dissolved Oxygen (mg/L)
+
+These inputs reflect real-world measurable environmental conditions.
+
+⚠️ Important Notes & Limitations
+
+Predictions are data-distribution dependent
+
+The model is valid only for regions with similar environmental characteristics as the training dataset
+
+This project focuses on trend estimation, not causal hydrological modeling
+
+Retraining is required when new regions or significantly different data are introduced
+
+🔮 Future Enhancements
+
+Streamlit-based interactive web interface
+
+Confidence intervals for predictions
+
+Lag-based and rolling-window features
+
+Region-wise or aquifer-wise model versions
+
+Integration with additional environmental datasets
+
+📚 Learning Outcome
+
+This project demonstrates:
+
+End-to-end ML pipeline design
+
+Separation of training and inference logic
+
+Handling real-world preprocessing issues
+
+Reproducible and deployable ML workflows
+
+👤 Author
+
+Siddhanth Sharma
 
 ## ▶️ How to Run
 
