@@ -4,14 +4,25 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
 
-def load_and_preprocess_data(csv_path, scale_for_linear=False):
+
+def load_and_preprocess_data(csv_path, scale_for_linear=False, training=True):
+    """
+    Loads and preprocesses groundwater dataset.
+
+    Parameters:
+    - csv_path: path to CSV file
+    - scale_for_linear: whether scaling is needed
+    - training: True if target column exists
+    """
 
     df = pd.read_csv(csv_path)
 
+    # Date handling
     df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
     df = df.sort_values("Date").reset_index(drop=True)
     df = df.dropna(subset=["Date"])
 
+    # Time features
     df["Month"] = df["Date"].dt.month
     df["DayOfYear"] = df["Date"].dt.dayofyear
 
@@ -24,11 +35,9 @@ def load_and_preprocess_data(csv_path, scale_for_linear=False):
         "DayOfYear"
     ]
 
-    target_col = "Water_Level_m"
-
     X = df[feature_cols]
-    y = df[target_col]
 
+    # Handle missing values
     imputer = SimpleImputer(strategy="median")
     X = pd.DataFrame(imputer.fit_transform(X), columns=feature_cols)
 
@@ -37,4 +46,8 @@ def load_and_preprocess_data(csv_path, scale_for_linear=False):
         scaler = StandardScaler()
         X = pd.DataFrame(scaler.fit_transform(X), columns=feature_cols)
 
-    return X, y, scaler
+    if training:
+        y = df["Water_Level_m"]
+        return X, y, scaler
+    else:
+        return X, None, scaler
