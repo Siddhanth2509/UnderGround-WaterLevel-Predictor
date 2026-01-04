@@ -1,2 +1,84 @@
-# UnderGround-WaterLevel-Predictor
-Underground water level prediction using LSTM for time-series forecasting, achieving ~85% accuracy. Includes data preprocessing, feature engineering, normalization, and hyperparameter tuning. Explores ensemble methods (Random Forest, XGBoost) for improved performance in sustainable water resource management.
+# Underground Water Level Predictor
+
+## 📌 Overview
+This project is a machine learning–based system designed to predict **groundwater levels** using historical environmental data. It focuses on **localized, short-term prediction and trend analysis**, supporting early awareness of groundwater stress and encouraging preventive water resource planning.
+
+The project follows a clean, modular ML pipeline and is designed to scale with additional data sources.
+
+---
+
+## 🎯 Problem Statement
+Groundwater depletion often occurs gradually and remains unnoticed until severe shortages arise. Large-scale solutions like water pipelines are expensive and reactive. This project aims to provide a **data-driven early indicator** by analyzing how environmental factors affect groundwater levels.
+
+---
+
+## 🧠 Solution Approach
+The system:
+- Cleans and preprocesses raw groundwater data
+- Engineers time-based and environmental features
+- Trains and evaluates regression models using time-aware validation
+- Selects the most reliable model
+- Provides predictions for new inputs through a reusable interface
+
+---
+
+## ⚙️ Features
+- Robust preprocessing pipeline
+- Time-based train–test split
+- Model comparison (baseline vs advanced)
+- Evaluation using RMSE, MAE, and R²
+- Prediction module for real-world usage
+- Streamlit-ready architecture
+- Scalable design for multi-year and multi-region data
+
+---
+
+## 📁 Project Structure
+UnderGround-WaterLevel-Predictor/
+│
+├── data/
+│ └── DWLR_Dataset_2023.csv
+│
+├── src/
+│ ├── preprocessing.py # Data cleaning & feature engineering
+│ ├── train_model.py # Model training & evaluation
+│ └── predict.py # Model inference
+│
+├── model/
+│ └── groundwater_model.pkl # Saved trained model
+│
+├── app/
+│ └── streamlit_app.py # Frontend (Phase 1)
+│
+├── README.md
+├── requirements.txt
+└── .gitignore
+
+---
+
+## 🧪 Model Training & Evaluation
+
+Example results:
+
+Linear Regression
+
+RMSE: 0.153
+MAE : 0.143
+R² : -0.126
+
+Random Forest
+
+RMSE: 0.315
+MAE : 0.280
+R² : -3.774
+
+
+A simpler model generalized better due to limited and noisy environmental data.
+
+---
+
+## ▶️ How to Run
+
+### Train the model
+```bash
+python src/train_model.py
