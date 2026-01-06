@@ -1,12 +1,13 @@
-# src/predict.py
-
+import os
 import joblib
 import pandas as pd
-from preprocessing import load_and_preprocess_data
 
-MODEL_PATH = "model/groundwater_model.pkl"
-SCALER_PATH = "model/scaler.pkl"
+from src.preprocessing import load_and_preprocess_data
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MODEL_PATH = os.path.join(BASE_DIR, "model", "groundwater_model.pkl")
+
+model = joblib.load(MODEL_PATH)
 
 def predict_groundwater_level(
     temperature,
@@ -15,8 +16,6 @@ def predict_groundwater_level(
     dissolved_oxygen,
     date
 ):
-
-
     input_df = pd.DataFrame({
         "Date": [date],
         "Temperature_C": [temperature],
@@ -25,36 +24,9 @@ def predict_groundwater_level(
         "Dissolved_Oxygen_mg_L": [dissolved_oxygen]
     })
 
-    temp_path = "temp_input.csv"
-    input_df.to_csv(temp_path, index=False)
-
-    # Preprocess WITHOUT scaling and WITHOUT target
-    X, _, _ = load_and_preprocess_data(
-        temp_path,
+    X_scaled, _, _ = load_and_preprocess_data(
+        input_df,
         training=False
     )
 
-    # Load scaler and apply
-    scaler = joblib.load(SCALER_PATH)
-    X = pd.DataFrame(
-        scaler.transform(X),
-        columns=X.columns
-    )
-
-    # Load trained model
-    model = joblib.load(MODEL_PATH)
-
-    prediction = model.predict(X)[0]
-    return prediction
-
-
-if __name__ == "__main__":
-    pred = predict_groundwater_level(
-        temperature=30,
-        rainfall=120,
-        ph=7.2,
-        dissolved_oxygen=6.5,
-        date="2023-08-15"
-    )
-
-    print(f"Predicted Groundwater Level: {pred:.3f} meters")
+    return float(model.predict(X_scaled)[0])
