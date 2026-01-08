@@ -4,6 +4,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 
+
 # -------------------------------------------------
 # Page config
 # -------------------------------------------------
@@ -39,7 +40,7 @@ else:
     SIDEBAR_BG = "linear-gradient(180deg, #f8fafc, #eef2ff)"
 
 # -------------------------------------------------
-# GLOBAL STYLES
+# GLOBAL STYLES (UX POLISH ONLY)
 # -------------------------------------------------
 st.markdown(f"""
 <style>
@@ -79,27 +80,43 @@ section[data-testid="stSidebar"] a:hover {{
     border-radius: 20px;
     padding: 22px;
     box-shadow: 0 12px 40px rgba(0,0,0,0.35);
-    transition: all 0.35s ease;
+    transition: all 0.4s ease;
 }}
 
 .card:hover {{
-    transform: translateY(-6px);
-    box-shadow: 0 30px 70px rgba(79,195,247,0.25);
+    transform: translateY(-8px) scale(1.01);
+    box-shadow: 0 40px 90px rgba(79,195,247,0.28);
 }}
 
-/* KPI */
+/* ---------- KPI ---------- */
 .metric-value {{
     font-size: 28px;
     font-weight: 800;
     color: {ACCENT};
+    text-shadow: 0 0 18px rgba(79,195,247,0.35);
 }}
 
 .metric-label {{
     font-size: 13px;
     opacity: 0.7;
+    letter-spacing: 0.3px;
 }}
 
-/* Hero */
+/* ---------- SECTION TITLES ---------- */
+.section-title {{
+    font-size: 22px;
+    font-weight: 800;
+    margin: 28px 0 16px 0;
+    letter-spacing: 0.4px;
+}}
+
+.section-subtle {{
+    opacity: 0.75;
+    font-size: 14px;
+    margin-top: -8px;
+}}
+
+/* ---------- HERO ---------- */
 .hero {{
     padding: 38px 44px;
     border-radius: 28px;
@@ -150,31 +167,18 @@ section[data-testid="stSidebar"] a:hover {{
     font-size: 14px;
 }}
 
-/* HIDE STREAMLIT AUTO-GENERATED MULTIPAGE NAV (app / View more) */
+/* Hide Streamlit auto nav */
 section[data-testid="stSidebarNav"] {{
     display: none !important;
 }}
 
 </style>
 
-
-
 <div class="glow"></div>
 """, unsafe_allow_html=True)
 
 # -------------------------------------------------
-# SIDEBAR NAVIGATION (ONLY 5 ITEMS)
-# -------------------------------------------------
-#with st.sidebar:
-#    st.markdown("### 🌍 Navigation")
- #   st.page_link("pages/📊 Dashboard.py", label="📊 Dashboard")
-#    st.page_link("pages/🔮 Predict.py", label="🔮 Predict")
-#    st.page_link("pages/📘 Learn.py", label="📘 Learn")
-#    st.page_link("pages/🤖 Assistant.py", label="🤖 Assistant")
-#    st.page_link("pages/👤 Profile.py", label="👤 Profile")
-
-# -------------------------------------------------
-# TOP RIGHT ICONS
+# TOP RIGHT ICONS (UNCHANGED)
 # -------------------------------------------------
 spacer, user_col, theme_col = st.columns([8, 0.6, 0.6])
 
@@ -192,7 +196,7 @@ with theme_col:
     st.button("🌙" if st.session_state.theme == "dark" else "☀️", on_click=toggle_theme)
 
 # -------------------------------------------------
-# HERO SECTION (UNCHANGED)
+# HERO SECTION
 # -------------------------------------------------
 st.markdown("""
 <div class="hero">
@@ -215,7 +219,7 @@ st.markdown("""
 st.markdown("<br>", unsafe_allow_html=True)
 
 # -------------------------------------------------
-# KPI CARDS (UNCHANGED)
+# KPI CARDS
 # -------------------------------------------------
 c1, c2, c3, c4, c5 = st.columns(5)
 
@@ -236,16 +240,43 @@ with c5: metric("Model Status", "Active")
 st.markdown("<br>", unsafe_allow_html=True)
 
 # -------------------------------------------------
-# 2D TREND (UNCHANGED)
+# 2D TREND
 # -------------------------------------------------
-st.markdown("### 📈 Prediction Trend")
+st.markdown("""
+<div class="section-title">📈 Prediction Trend</div>
+<div class="section-subtle">Temporal evolution of groundwater depth</div>
+""", unsafe_allow_html=True)
 
-data = pd.DataFrame({
-    "Date": pd.date_range("2024-01-01", periods=10),
-    "Water Level (m)": [3.1, 3.3, 3.4, 3.2, 3.5, 3.6, 3.4, 3.5, 3.6, 3.54]
-})
+#data = pd.DataFrame({
+#    "Date": pd.date_range("2024-01-01", periods=10),
+#    "Water Level (m)": [3.1, 3.3, 3.4, 3.2, 3.5, 3.6, 3.4, 3.5, 3.6, 3.54]
+#})
+# -------------------------------------------------
+# LIVE PREDICTION HISTORY (FROM PREDICT PAGE)
+# -------------------------------------------------
+if "prediction_history" in st.session_state and len(st.session_state.prediction_history) > 0:
+    data = pd.DataFrame(st.session_state.prediction_history)
+    data["Index"] = range(1, len(data) + 1)
+    x_col = "Index"
+    y_col = "Prediction_m"
+else:
+    # Fallback if no predictions yet
+    data = pd.DataFrame({
+        "Index": [1, 2, 3],
+        "Prediction_m": [3.2, 3.4, 3.3]
+    })
+    x_col = "Index"
+    y_col = "Prediction_m"
 
-fig = px.line(data, x="Date", y="Water Level (m)", markers=True)
+
+#fig = px.line(data, x="Date", y="Water Level (m)", markers=True)
+fig = px.line(
+    data,
+    x=x_col,
+    y=y_col,
+    markers=True
+)
+
 fig.update_layout(
     paper_bgcolor="rgba(0,0,0,0)",
     plot_bgcolor="rgba(0,0,0,0)",
@@ -258,9 +289,12 @@ st.plotly_chart(fig, use_container_width=True)
 st.markdown("</div>", unsafe_allow_html=True)
 
 # -------------------------------------------------
-# 3D VISUALS (SIDE BY SIDE)
+# 3D VISUALS
 # -------------------------------------------------
-st.markdown("### 🌊 3D Groundwater & Aquifer Analysis")
+st.markdown("""
+<div class="section-title">🌊 3D Groundwater & Aquifer Analysis</div>
+<div class="section-subtle">Subsurface water dynamics and aquifer stratification</div>
+""", unsafe_allow_html=True)
 
 left, right = st.columns(2)
 
@@ -315,14 +349,18 @@ with right:
     st.markdown("</div>", unsafe_allow_html=True)
 
 # -------------------------------------------------
-# 3D EXPLANATION (CINEMATIC)
+# 3D EXPLANATION
 # -------------------------------------------------
 st.markdown("""
 <div style="
     margin-top: 26px;
     padding: 22px 26px;
     border-radius: 18px;
-    background: rgba(79,195,247,0.08);
+    background: linear-gradient(
+        135deg,
+        rgba(79,195,247,0.10),
+        rgba(79,195,247,0.03)
+    );
     line-height: 1.6;
 ">
     <h4>🧭 Understanding the 3D Visualizations</h4>
