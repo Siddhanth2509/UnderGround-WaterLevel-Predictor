@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-
+import os
 
 # -------------------------------------------------
 # Page config
@@ -40,7 +40,7 @@ else:
     SIDEBAR_BG = "linear-gradient(180deg, #f8fafc, #eef2ff)"
 
 # -------------------------------------------------
-# GLOBAL STYLES (UX POLISH ONLY)
+# GLOBAL STYLES
 # -------------------------------------------------
 st.markdown(f"""
 <style>
@@ -50,7 +50,6 @@ st.markdown(f"""
     color: {TEXT};
 }}
 
-/* ---------- SIDEBAR ---------- */
 section[data-testid="stSidebar"] {{
     width: 220px;
     background: {SIDEBAR_BG};
@@ -74,7 +73,6 @@ section[data-testid="stSidebar"] a:hover {{
     transform: translateX(6px) scale(1.02);
 }}
 
-/* ---------- CARDS ---------- */
 .card {{
     background: {CARD};
     border-radius: 20px;
@@ -88,7 +86,6 @@ section[data-testid="stSidebar"] a:hover {{
     box-shadow: 0 40px 90px rgba(79,195,247,0.28);
 }}
 
-/* ---------- KPI ---------- */
 .metric-value {{
     font-size: 28px;
     font-weight: 800;
@@ -99,15 +96,12 @@ section[data-testid="stSidebar"] a:hover {{
 .metric-label {{
     font-size: 13px;
     opacity: 0.7;
-    letter-spacing: 0.3px;
 }}
 
-/* ---------- SECTION TITLES ---------- */
 .section-title {{
     font-size: 22px;
     font-weight: 800;
     margin: 28px 0 16px 0;
-    letter-spacing: 0.4px;
 }}
 
 .section-subtle {{
@@ -116,7 +110,6 @@ section[data-testid="stSidebar"] a:hover {{
     margin-top: -8px;
 }}
 
-/* ---------- HERO ---------- */
 .hero {{
     padding: 38px 44px;
     border-radius: 28px;
@@ -124,7 +117,6 @@ section[data-testid="stSidebar"] a:hover {{
     box-shadow: 0 25px 70px rgba(0,0,0,0.45);
 }}
 
-/* Glow */
 .glow {{
     position: fixed;
     width: 320px;
@@ -132,33 +124,8 @@ section[data-testid="stSidebar"] a:hover {{
     background: radial-gradient(circle, rgba(79,195,247,0.18), transparent);
     top: 15%;
     right: 12%;
-    z-index: 0;
 }}
 
-/* Floating chatbot */
-.chatbot {{
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: {ACCENT};
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 24px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.35);
-    cursor: pointer;
-    transition: transform 0.3s ease;
-}}
-
-.chatbot:hover {{
-    transform: scale(1.1);
-}}
-
-/* Footer */
 .footer {{
     margin-top: 80px;
     padding: 24px;
@@ -167,7 +134,6 @@ section[data-testid="stSidebar"] a:hover {{
     font-size: 14px;
 }}
 
-/* Hide Streamlit auto nav */
 section[data-testid="stSidebarNav"] {{
     display: none !important;
 }}
@@ -178,7 +144,7 @@ section[data-testid="stSidebarNav"] {{
 """, unsafe_allow_html=True)
 
 # -------------------------------------------------
-# TOP RIGHT ICONS (UNCHANGED)
+# TOP RIGHT ICONS
 # -------------------------------------------------
 spacer, user_col, theme_col = st.columns([8, 0.6, 0.6])
 
@@ -196,28 +162,24 @@ with theme_col:
     st.button("🌙" if st.session_state.theme == "dark" else "☀️", on_click=toggle_theme)
 
 # -------------------------------------------------
-# HERO SECTION
+# HERO
 # -------------------------------------------------
 st.markdown("""
 <div class="hero">
-    <h1 style="font-size:46px;font-weight:900;">
-        🌍 Groundwater Intelligence
-    </h1>
-    <p style="max-width:760px;font-size:16px;">
-        A data-driven platform for monitoring, predicting, and understanding
-        underground water systems using machine learning and scientific insights.
-    </p>
-    <ul style="margin-top:12px;">
-        <li>📉 Early warning of groundwater depletion</li>
-        <li>🌧️ Climate & rainfall impact analysis</li>
-        <li>🧠 Explainable ML predictions</li>
-        <li>🌱 Sustainability & conservation insights</li>
-    </ul>
+<h1 style="font-size:46px;font-weight:900;">🌍 Groundwater Intelligence</h1>
+<p style="max-width:760px;font-size:16px;">
+A data-driven platform for monitoring, predicting, and understanding underground water systems.
+</p>
+<ul>
+<li>📉 Early warning of groundwater depletion</li>
+<li>🌧 Climate & rainfall impact analysis</li>
+<li>🧠 Explainable ML predictions</li>
+<li>🌱 Sustainability & conservation insights</li>
+</ul>
 </div>
 """, unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
-
 # -------------------------------------------------
 # KPI CARDS
 # -------------------------------------------------
@@ -231,51 +193,71 @@ def metric(label, value):
     </div>
     """, unsafe_allow_html=True)
 
-with c1: metric("Last Prediction", "3.54 m")
-with c2: metric("Avg Groundwater", "3.43 m")
-with c3: metric("Predictions Run", "12")
+with c1: metric("Last Prediction", "Live")
+with c2: metric("Avg Groundwater", "≈ 3.4 m")
+with c3: metric("Predictions Run", "Persistent")
 with c4: metric("Region", "India")
 with c5: metric("Model Status", "Active")
 
-st.markdown("<br>", unsafe_allow_html=True)
+# -------------------------------------------------
+# LOAD HISTORY (CSV → SESSION → FALLBACK)
+# -------------------------------------------------
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+CSV_PATH = os.path.join(BASE_DIR, "data", "prediction_history.csv")
+
+if os.path.exists(CSV_PATH):
+    history_df = pd.read_csv(CSV_PATH)
+elif "prediction_history" in st.session_state:
+    history_df = pd.DataFrame(st.session_state.prediction_history)
+else:
+    history_df = pd.DataFrame({"Prediction_m": [3.2, 3.4, 3.3]})
 
 # -------------------------------------------------
-# 2D TREND
+# 🔒 COLUMN NORMALIZATION (FINAL FIX)
+# -------------------------------------------------
+if "Prediction_m" not in history_df.columns:
+    for col in history_df.columns:
+        if "predict" in col.lower():
+            history_df.rename(columns={col: "Prediction_m"}, inplace=True)
+            break
+
+if "Prediction_m" not in history_df.columns:
+    st.warning("No prediction data available yet.")
+    st.stop()
+
+history_df["Index"] = range(1, len(history_df) + 1)
+
+# -------------------------------------------------
+# TREND + CONFIDENCE BAND
 # -------------------------------------------------
 st.markdown("""
 <div class="section-title">📈 Prediction Trend</div>
-<div class="section-subtle">Temporal evolution of groundwater depth</div>
+<div class="section-subtle">Groundwater depth with uncertainty</div>
 """, unsafe_allow_html=True)
 
-#data = pd.DataFrame({
-#    "Date": pd.date_range("2024-01-01", periods=10),
-#    "Water Level (m)": [3.1, 3.3, 3.4, 3.2, 3.5, 3.6, 3.4, 3.5, 3.6, 3.54]
-#})
-# -------------------------------------------------
-# LIVE PREDICTION HISTORY (FROM PREDICT PAGE)
-# -------------------------------------------------
-if "prediction_history" in st.session_state and len(st.session_state.prediction_history) > 0:
-    data = pd.DataFrame(st.session_state.prediction_history)
-    data["Index"] = range(1, len(data) + 1)
-    x_col = "Index"
-    y_col = "Prediction_m"
-else:
-    # Fallback if no predictions yet
-    data = pd.DataFrame({
-        "Index": [1, 2, 3],
-        "Prediction_m": [3.2, 3.4, 3.3]
-    })
-    x_col = "Index"
-    y_col = "Prediction_m"
+confidence = 0.1
+history_df["Upper"] = history_df["Prediction_m"] + confidence
+history_df["Lower"] = history_df["Prediction_m"] - confidence
 
+fig = go.Figure()
 
-#fig = px.line(data, x="Date", y="Water Level (m)", markers=True)
-fig = px.line(
-    data,
-    x=x_col,
-    y=y_col,
-    markers=True
-)
+fig.add_trace(go.Scatter(
+    x=history_df["Index"],
+    y=history_df["Prediction_m"],
+    mode="lines+markers",
+    name="Prediction",
+    line=dict(color=ACCENT, width=3)
+))
+
+fig.add_trace(go.Scatter(
+    x=list(history_df["Index"]) + list(history_df["Index"])[::-1],
+    y=list(history_df["Upper"]) + list(history_df["Lower"])[::-1],
+    fill="toself",
+    fillcolor="rgba(79,195,247,0.15)",
+    line=dict(color="rgba(255,255,255,0)"),
+    hoverinfo="skip",
+    name="Confidence (±0.1 m)"
+))
 
 fig.update_layout(
     paper_bgcolor="rgba(0,0,0,0)",
@@ -293,7 +275,6 @@ st.markdown("</div>", unsafe_allow_html=True)
 # -------------------------------------------------
 st.markdown("""
 <div class="section-title">🌊 3D Groundwater & Aquifer Analysis</div>
-<div class="section-subtle">Subsurface water dynamics and aquifer stratification</div>
 """, unsafe_allow_html=True)
 
 left, right = st.columns(2)
@@ -340,7 +321,7 @@ def aquifer_layers():
 
 with left:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.plotly_chart(groundwater_surface(3.5), use_container_width=True)
+    st.plotly_chart(groundwater_surface(history_df["Prediction_m"].iloc[-1]), use_container_width=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
 with right:
@@ -349,48 +330,35 @@ with right:
     st.markdown("</div>", unsafe_allow_html=True)
 
 # -------------------------------------------------
-# 3D EXPLANATION
+# 3D EXPLANATION (RESTORED)
 # -------------------------------------------------
 st.markdown("""
 <div style="
-    margin-top: 26px;
-    padding: 22px 26px;
-    border-radius: 18px;
+    margin-top: 32px;
+    padding: 30px 34px;
+    border-radius: 22px;
     background: linear-gradient(
         135deg,
-        rgba(79,195,247,0.10),
-        rgba(79,195,247,0.03)
+        rgba(79,195,247,0.16),
+        rgba(79,195,247,0.04)
     );
-    line-height: 1.6;
+    line-height: 1.7;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
 ">
-    <h4>🧭 Understanding the 3D Visualizations</h4>
-    <p>
-        <strong>Groundwater Surface</strong> illustrates how underground water
-        levels vary across a region due to rainfall, terrain, and seasonal effects.
-    </p>
-    <p>
-        <strong>Aquifer Layers</strong> represent multiple water-bearing zones
-        beneath the surface, revealing how groundwater is stored at different depths.
-    </p>
-    <p style="opacity:0.85;">
-        These visualizations convert complex data into an intuitive picture of
-        what lies beneath the earth.
-    </p>
+<h3>🧭 Understanding the 3D Visualizations</h3>
+<p><strong>Groundwater Surface</strong> shows spatial variation of predicted groundwater depth influenced by rainfall, terrain and seasonality.</p>
+<p><strong>Aquifer Layers</strong> represent multiple underground water-bearing formations storing groundwater at different depths.</p>
+<p style="opacity:0.85;">These visuals dynamically react to model predictions, converting abstract numbers into intuitive subsurface insight.</p>
 </div>
 """, unsafe_allow_html=True)
-
-# -------------------------------------------------
-# CHATBOT ICON
-# -------------------------------------------------
-st.markdown("""<div class="chatbot">🤖</div>""", unsafe_allow_html=True)
 
 # -------------------------------------------------
 # FOOTER
 # -------------------------------------------------
 st.markdown("""
 <div class="footer">
-    📧 contact@groundwater.ai | ☎️ +91-XXXXXXXXXX  
-    <br>
-    © 2026 Groundwater Intelligence Platform · Feedback welcome
+📧 contact@groundwater.ai | ☎️ +91-XXXXXXXXXX  
+<br>
+© 2026 Groundwater Intelligence Platform · Feedback welcome
 </div>
 """, unsafe_allow_html=True)

@@ -15,7 +15,7 @@ st.set_page_config(
 )
 
 # -------------------------------------------------
-# LOAD MODEL (OUTSIDE app/)
+# PATHS (MODEL OUTSIDE app/)
 # -------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 MODEL_PATH = os.path.join(BASE_DIR, "model", "groundwater_model.pkl")
@@ -109,6 +109,22 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # -------------------------------------------------
+# TOP RIGHT ICONS
+# -------------------------------------------------
+spacer, user_col, theme_col = st.columns([8, 0.6, 0.6])
+
+with user_col:
+    with st.popover("👤"):
+        st.page_link("pages/📊 Dashboard.py", label="📊 Dashboard")
+        st.page_link("pages/🔮 Predict.py", label="🔮 Predict")
+        st.page_link("pages/📘 Learn.py", label="📘 Learn")
+        st.page_link("pages/🤖 Assistant.py", label="🤖 Assistant")
+        st.page_link("pages/👤 Profile.py", label="👤 Profile")
+        st.markdown("---")
+        st.button("🚪 Logout")
+
+
+# -------------------------------------------------
 # HEADER
 # -------------------------------------------------
 st.markdown("""
@@ -138,7 +154,7 @@ with left:
     if region != "India":
         st.warning("This model is currently trained only on Indian groundwater data.")
 
-    # FIXED YEAR 2023
+    # YEAR FIXED TO 2023
     month = st.selectbox(
         "📅 Month (2023)",
         ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
@@ -172,16 +188,32 @@ input_df = pd.DataFrame([{
 X_scaled = scaler.transform(input_df)
 prediction = float(model.predict(X_scaled)[0])
 
-# SAVE PREDICTION FOR DASHBOARD
+# -------------------------------------------------
+# SAVE PREDICTION (SESSION + CSV)
+# -------------------------------------------------
 if "prediction_history" not in st.session_state:
     st.session_state.prediction_history = []
 
-st.session_state.prediction_history.append({
+record = {
     "Month": month,
     "Prediction_m": round(prediction, 2)
-})
+}
 
-# STATUS CLASSIFICATION (DATA-DRIVEN)
+st.session_state.prediction_history.append(record)
+
+DATA_DIR = os.path.join(BASE_DIR, "data")
+os.makedirs(DATA_DIR, exist_ok=True)
+CSV_PATH = os.path.join(DATA_DIR, "prediction_history.csv")
+
+df_new = pd.DataFrame([record])
+if os.path.exists(CSV_PATH):
+    df_new.to_csv(CSV_PATH, mode="a", header=False, index=False)
+else:
+    df_new.to_csv(CSV_PATH, index=False)
+
+# -------------------------------------------------
+# STATUS CLASSIFICATION
+# -------------------------------------------------
 if prediction < 3:
     status = "Safe"
     color = "#22C55E"
