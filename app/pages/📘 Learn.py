@@ -2,9 +2,6 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from reportlab.platypus import SimpleDocTemplate, Paragraph
-from reportlab.lib.styles import getSampleStyleSheet
-import tempfile
 
 # ================= PAGE CONFIG =================
 st.set_page_config(
@@ -12,185 +9,314 @@ st.set_page_config(
     layout="wide"
 )
 
-# ================= SESSION STATE (LAZY LOAD) =================
-if "sections_loaded" not in st.session_state:
-    st.session_state.sections_loaded = 1
-
-def load_next():
-    st.session_state.sections_loaded += 1
-
 # ================= GLOBAL CSS (UNCHANGED) =================
 st.markdown("""
 <style>
-html, body, [class*="css"] {
-    background-color: #070b14;
-    color: #e6f1ff;
-    font-family: 'Inter', sans-serif;
+
+/* ========= RESET ========= */
+.stApp, .stAppViewContainer, .main {
+    background: none !important;
 }
-.section { padding: 4.5rem 0; }
-.section-title { font-size: 2.4rem; font-weight: 600; }
-.section-text { font-size: 1.1rem; line-height: 1.8; color: #cfd8e3; }
+
+/* ========= MAIN BACKGROUND ========= */
+.stApp::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(1600px 800px at 18% 12%, rgba(35,115,255,0.22), transparent 45%),
+        radial-gradient(1200px 700px at 82% 22%, rgba(0,180,255,0.18), transparent 50%),
+        radial-gradient(1400px 900px at 50% 90%, rgba(0,95,185,0.20), transparent 55%),
+        linear-gradient(180deg, #03060c 0%, #070b14 45%, #03060c 100%);
+    z-index: 0;
+}
+
+/* ========= VIGNETTE ========= */
+.stApp::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    box-shadow: inset 0 0 180px rgba(0,0,0,0.9);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* ========= CONTENT LAYER ========= */
+.block-container {
+    position: relative;
+    z-index: 2;
+    background: transparent !important;
+}
+
+/* ========= SIDEBAR (MATCH PREDICT) ========= */
+section[data-testid="stSidebar"] {
+    width: 220px;
+    background: #050913;
+    transition: all 0.35s ease;
+    border-right: 1px solid rgba(255,255,255,0.08);
+}
+section[data-testid="stSidebar"]:hover {
+    width: 240px;
+}
+section[data-testid="stSidebar"] a {
+    border-radius: 10px;
+    margin: 6px 8px;
+    padding: 12px 16px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+}
+section[data-testid="stSidebar"] a:hover {
+    background: rgba(79,195,247,0.18);
+    transform: translateX(6px) scale(1.02);
+}
+section[data-testid="stSidebar"] * {
+    color: #E5E7EB;
+}
+
+/* ========= PROGRESS BAR ========= */
+#progress-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: rgba(255,255,255,0.05);
+    z-index: 9999;
+}
+#progress-bar {
+    height: 5px;
+    width: 0%;
+    background: linear-gradient(90deg, #4fc3f7, #6ae3ff);
+}
+
+/* ========= SECTIONS ========= */
+.section {
+    padding: 3.8rem 0;
+    animation: fadeUp 1.15s ease both;
+}
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(22px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ========= TYPOGRAPHY ========= */
 .hero-title {
-    font-size: 4rem;
+    font-size: 4.2rem;
     font-weight: 700;
     text-align: center;
     background: linear-gradient(90deg, #6ae3ff, #4fc3f7);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 35px rgba(0,160,255,0.45);
 }
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 600;
+}
+.section-text {
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: #cfd8e3;
+    max-width: 940px;
+}
+
+/* ========= DIVIDER ========= */
 .divider {
     width: 120px;
     height: 3px;
     background: linear-gradient(90deg, #4fc3f7, transparent);
-    margin: 1.5rem 0 2.5rem 0;
+    margin: 1.3rem 0 2rem 0;
 }
-.story-img {
-    width: 72%;
-    display: block;
-    margin: 3rem auto;
-    border-radius: 16px;
-    box-shadow: 0 0 28px rgba(79,195,247,0.22);
+
+/* ========= CARDS ========= */
+.card {
+    background: rgba(255,255,255,0.045);
+    border-radius: 18px;
+    padding: 1.9rem;
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: transform .3s ease, box-shadow .3s ease;
 }
+.card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 0 38px rgba(79,195,247,0.45);
+}
+
+/* ========= FOOTER ========= */
 .footer {
     text-align: center;
-    color: #8aa0b8;
-    font-size: 0.9rem;
+    color: #9bb0c7;
+    font-size: 0.95rem;
     padding: 3rem 0 1rem 0;
 }
 </style>
+
+<div id="progress-container"><div id="progress-bar"></div></div>
+
+<script>
+window.addEventListener("scroll", () => {
+    const scrolled = (document.documentElement.scrollTop /
+    (document.documentElement.scrollHeight - document.documentElement.clientHeight)) * 100;
+    document.getElementById("progress-bar").style.width = scrolled + "%";
+});
+</script>
 """, unsafe_allow_html=True)
 
 # ================= HERO =================
 st.markdown("""
 <div class="section">
-    <div class="hero-title">The Invisible Crisis Beneath Our Feet</div>
-    <p style="text-align:center;color:#b0c4de;">
-        Learning how data and intelligence understand groundwater
-    </p>
+  <div class="hero-title">The Invisible Crisis Beneath Our Feet</div>
+  <p style="text-align:center;color:#b7cbe6;max-width:940px;margin:auto;">
+    Groundwater is hidden, slow to respond, and easy to overuse.
+    This page walks you through <b>why it matters</b>,
+    <b>how data captures it</b>, and <b>how AI helps us reason about it</b>.
+  </p>
 </div>
 """, unsafe_allow_html=True)
 
-st.button("Scroll to continue ↓", on_click=load_next)
+# ================= WHY GROUNDWATER MATTERS =================
+st.markdown("""
+<div class="section">
+  <div class="section-title">Why Groundwater Matters</div>
+  <div class="divider"></div>
+  <div class="section-text">
+    <b>The problem:</b> Groundwater depletion happens silently, underground, and often goes unnoticed
+    until wells fail or ecosystems collapse.<br><br>
 
-# ================= SECTION 1 =================
-if st.session_state.sections_loaded >= 2:
-    st.markdown("""
-    <div class="section">
-        <div class="section-title">Why Groundwater Matters</div>
-        <div class="divider"></div>
-        <div class="section-text">
-            Groundwater provides nearly 50% of global drinking water and
-            supports agriculture worldwide. Its depletion is invisible,
-            slow, and often irreversible.
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    <b>The impact:</b> Nearly 50% of global drinking water and most irrigation systems depend on groundwater.
+    Declining levels increase pumping costs, reduce crop yields, and threaten water security.<br><br>
 
-    st.image(
-        "https://images.unsplash.com/photo-1509395176047-4a66953fd231",
-        width=900
-    )
+    <b>The urgency:</b> Unlike surface water, groundwater recovers slowly. Decisions made today
+    affect availability for decades.
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
-    st.button("Continue ↓", on_click=load_next)
+st.image("https://images.unsplash.com/photo-1509395176047-4a66953fd231", use_container_width=True)
 
-# ================= SECTION 2 =================
-if st.session_state.sections_loaded >= 3:
-    st.markdown("""
-    <div class="section">
-        <div class="section-title">DWLR Dataset (2023)</div>
-        <div class="divider"></div>
-        <div class="section-text">
-            Digital Water Level Recorders continuously capture groundwater
-            depth and quality across seasons and locations.
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+# ================= DATASET STORY =================
+st.markdown("""
+<div class="section">
+  <div class="section-title">Dataset Story — DWLR 2023</div>
+  <div class="divider"></div>
+  <div class="section-text">
+    Digital Water Level Recorders (DWLRs) are installed across India to continuously
+    monitor groundwater depth and quality indicators throughout the year.<br><br>
 
-    st.image(
-        "https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc",
-        width=900
-    )
+    This dataset captures seasonal variation, recharge cycles, and human impact,
+    turning raw sensor readings into meaningful learning signals.
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
-    st.button("Continue ↓", on_click=load_next)
+cols = st.columns(5)
+features = [
+    ("🌧 Rainfall", "Controls recharge and seasonal recovery"),
+    ("🧪 pH", "Indicates chemical balance and contamination risk"),
+    ("💧 DO", "Reflects groundwater quality"),
+    ("🌡 Temperature", "Captures seasonal and chemical dynamics"),
+    ("⬇ Depth", "Direct measure of groundwater availability"),
+]
+for col, (t, d) in zip(cols, features):
+    with col:
+        st.markdown(f"<div class='card'><h3>{t}</h3><p>{d}</p></div>", unsafe_allow_html=True)
 
-# ================= SECTION 3 – 3D (SINGLE, CLEAN) =================
-if st.session_state.sections_loaded >= 4:
-    st.markdown("""
-    <div class="section">
-        <div class="section-title">3D Relationship Understanding</div>
-        <div class="divider"></div>
-        <div class="section-text">
-            Adjust the angle to explore how rainfall and temperature
-            influence groundwater depth.
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+st.image("https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc", use_container_width=True)
 
-    angle = st.slider("Rotate view", 0, 360, 45)
+# ================= HOW THE MODEL THINKS =================
+st.markdown("""
+<div class="section">
+  <div class="section-title">How the Model Thinks</div>
+  <div class="divider"></div>
+  <div class="section-text">
+    The model does <b>not</b> memorize past groundwater levels.<br><br>
 
-    rain = np.random.uniform(0, 100, 80)
-    temp = np.random.uniform(15, 40, 80)
-    depth = 65 - 0.35 * rain + 0.4 * temp + np.random.normal(0, 4, 80)
+    Instead, it learns relationships:
+    how rainfall interacts with temperature,
+    how water quality reflects subsurface conditions,
+    and how seasonal patterns influence depth.<br><br>
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection="3d")
-    ax.scatter(rain, temp, depth)
-    ax.view_init(elev=22, azim=angle)
-    ax.set_xlabel("Rainfall")
-    ax.set_ylabel("Temperature")
-    ax.set_zlabel("Depth")
-    st.pyplot(fig)
+    This distinction — <b>pattern learning vs memorization</b> —
+    allows the model to generalize to unseen conditions.
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
-    st.button("Continue ↓", on_click=load_next)
+st.image("https://images.unsplash.com/photo-1555949963-aa79dcee981c", use_container_width=True)
 
-# ================= SECTION 4 – YOUTUBE =================
-if st.session_state.sections_loaded >= 5:
-    st.markdown("""
-    <div class="section">
-        <div class="section-title">Recommended Learning</div>
-        <div class="divider"></div>
-    </div>
-    """, unsafe_allow_html=True)
+# ================= 3D UNDERSTANDING =================
+st.markdown("""
+<div class="section">
+  <div class="section-title">Understanding Relationships in 3D</div>
+  <div class="divider"></div>
+  <div class="section-text">
+    Groundwater depth is influenced by multiple variables simultaneously.
+    A 3D view helps reveal how these variables interact together,
+    rather than in isolation.
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
-    st.video("https://www.youtube.com/watch?v=YQ0r0JXkKzA")
-    st.video("https://www.youtube.com/watch?v=IHp8k7w2u4A")
-    st.video("https://www.youtube.com/watch?v=8jLOx1hD3_o")
+angle = st.slider("Rotate 3D View", 0, 360, 45)
+x = np.random.uniform(0, 100, 70)
+y = np.random.uniform(15, 40, 70)
+z = 65 - 0.35 * x + 0.4 * y + np.random.normal(0, 4, 70)
 
-    st.button("Continue ↓", on_click=load_next)
+fig = plt.figure()
+ax = fig.add_subplot(111, projection="3d")
+ax.scatter(x, y, z)
+ax.view_init(22, angle)
+st.pyplot(fig)
 
-# ================= AI CHATBOT =================
-if st.session_state.sections_loaded >= 6:
-    st.markdown("""
-    <div class="section">
-        <div class="section-title">Ask the Model</div>
-        <div class="divider"></div>
-    </div>
-    """, unsafe_allow_html=True)
+# ================= LIMITS & ASSUMPTIONS =================
+st.markdown("""
+<div class="section">
+  <div class="section-title">Limits & Assumptions</div>
+  <div class="divider"></div>
+  <div class="section-text">
+    • Predictions remain within physically observed ranges<br>
+    • Designed as <b>decision support</b>, not a real-time sensor<br>
+    • Accuracy depends on data coverage and representativeness<br>
+    • Extreme or unobserved conditions may reduce reliability
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
-    q = st.chat_input("Ask about the dataset, model, or visuals")
-    if q:
-        st.chat_message("assistant").write(
-            "This project explains groundwater behavior using DWLR data and "
-            "machine learning to identify patterns, not memorization."
-        )
+st.image("https://images.unsplash.com/photo-1618477461853-cf6ed80faba5", use_container_width=True)
 
-# ================= PDF EXPORT =================
-if st.session_state.sections_loaded >= 6:
-    if st.button("📄 Download Learn Page as PDF"):
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as f:
-            doc = SimpleDocTemplate(f.name)
-            styles = getSampleStyleSheet()
-            content = [
-                Paragraph("Groundwater Intelligence – Learn Page", styles["Title"]),
-                Paragraph("This document explains groundwater prediction using data and AI.", styles["BodyText"]),
-            ]
-            doc.build(content)
-            st.download_button("Download PDF", open(f.name, "rb"), file_name="Learn_Groundwater_AI.pdf")
+# ================= FUTURE SCOPE =================
+st.markdown("""
+<div class="section">
+  <div class="section-title">Future Scope</div>
+  <div class="divider"></div>
+</div>
+""", unsafe_allow_html=True)
+
+f1, f2, f3 = st.columns(3)
+future = [
+    ("🌍 Multi-Region Models", "State & basin-level forecasting"),
+    ("🕳 Deeper Aquifers", "Multi-layer aquifer modeling"),
+    ("🛰 Satellite + IoT", "Near real-time recharge and extraction signals"),
+]
+for col, (t, d) in zip([f1, f2, f3], future):
+    with col:
+        st.markdown(f"<div class='card'><h3>{t}</h3><p>{d}</p></div>", unsafe_allow_html=True)
+
+# ================= LEARNING =================
+st.markdown("""
+<div class="section">
+  <div class="section-title">Recommended Learning Resources</div>
+  <div class="divider"></div>
+</div>
+""", unsafe_allow_html=True)
+
+st.video("https://www.youtube.com/watch?v=zJgukuGKBUc")
+st.video("https://www.youtube.com/watch?v=IJaQUOj2Tg4")
+st.video("https://www.youtube.com/watch?v=b4WAxXXNSM4")
 
 # ================= FOOTER =================
 st.markdown("""
 <div class="footer">
-    © 2026 • Groundwater Intelligence System<br>
-    Built for learning, research, and decision support
+  © 2026 • Groundwater Intelligence System<br>
+  Built for learning, research, and decision support
 </div>
 """, unsafe_allow_html=True)

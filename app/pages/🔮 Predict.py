@@ -35,14 +35,16 @@ if st.session_state.theme == "dark":
     CARD = "#0b1220"
     TEXT = "#E5E7EB"
     ACCENT = "#4FC3F7"
+    SIDEBAR_BG = "#050913"
 else:
     BG = "#F8FAFC"
     CARD = "#FFFFFF"
     TEXT = "#0F172A"
     ACCENT = "#2563EB"
+    SIDEBAR_BG = "#F1F5F9"
 
 # -------------------------------------------------
-# GLOBAL / CINEMATIC STYLES
+# GLOBAL / CINEMATIC STYLES  (UNCHANGED + SIDEBAR ADDED)
 # -------------------------------------------------
 st.markdown(f"""
 <style>
@@ -51,6 +53,36 @@ st.markdown(f"""
     color: {TEXT};
 }}
 
+/* ================= DASHBOARD SIDEBAR (MATCHED) ================= */
+section[data-testid="stSidebar"] {{
+    width: 220px;
+    background: {SIDEBAR_BG};
+    transition: all 0.35s ease;
+    border-right: 1px solid rgba(255,255,255,0.08);
+}}
+
+section[data-testid="stSidebar"]:hover {{
+    width: 240px;
+}}
+
+section[data-testid="stSidebar"] a {{
+    border-radius: 10px;
+    margin: 6px 8px;
+    padding: 12px 16px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+}}
+
+section[data-testid="stSidebar"] a:hover {{
+    background: rgba(79,195,247,0.18);
+    transform: translateX(6px) scale(1.02);
+}}
+
+section[data-testid="stSidebar"] * {{
+    color: {TEXT};
+}}
+
+/* ================= EXISTING STYLES ================= */
 .card {{
     background: {CARD};
     border-radius: 18px;
@@ -123,7 +155,6 @@ with user_col:
         st.markdown("---")
         st.button("🚪 Logout")
 
-
 # -------------------------------------------------
 # HEADER
 # -------------------------------------------------
@@ -149,12 +180,10 @@ with left:
     st.markdown("<div class='card'>", unsafe_allow_html=True)
     st.markdown("### 🎛️ Input Parameters")
 
-    # REGION (FUTURE USE)
     region = st.selectbox("🌍 Region", ["India", "Other regions (Coming Soon)"])
     if region != "India":
         st.warning("This model is currently trained only on Indian groundwater data.")
 
-    # YEAR FIXED TO 2023
     month = st.selectbox(
         "📅 Month (2023)",
         ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
