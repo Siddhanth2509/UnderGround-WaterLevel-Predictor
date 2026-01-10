@@ -19,6 +19,28 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+with st.sidebar:
+    st.markdown("---")
+    st.markdown(
+        f"""
+        <div style="
+            padding:12px;
+            border-radius:14px;
+            background:#0b1220;
+            box-shadow:0 0 18px rgba(79,195,247,0.35);
+            text-align:center;
+        ">
+            <strong>{st.session_state.user['name']}</strong><br>
+            <span style="opacity:0.7">{st.session_state.user['role']}</span>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    if st.button("🚪 Logout"):
+        st.session_state.clear()
+        st.switch_page("app.py")
+
 # -------------------------------------------------
 # THEME STATE
 # -------------------------------------------------
