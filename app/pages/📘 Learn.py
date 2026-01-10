@@ -3,8 +3,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from utils.floating_assistant import render_floating_assistant
-
-
+if not st.session_state.get("is_authenticated"):
+    st.warning("Please log in first.")
+    st.page_link("app.py", label="🔐 Go to Login")
+    st.stop()
 # ================= PAGE CONFIG =================
 st.set_page_config(
     page_title="Learn | Groundwater Intelligence",

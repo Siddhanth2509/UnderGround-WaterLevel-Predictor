@@ -5,6 +5,10 @@ import os
 import time
 from datetime import datetime
 from PIL import Image, ImageFile
+if not st.session_state.get("is_authenticated"):
+    st.warning("Please log in first.")
+    st.page_link("app.py", label="🔐 Go to Login")
+    st.stop()
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 

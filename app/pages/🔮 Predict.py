@@ -5,7 +5,10 @@ import plotly.graph_objects as go
 import joblib
 import os
 from utils.floating_assistant import render_floating_assistant
-
+if not st.session_state.get("is_authenticated"):
+    st.warning("Please log in first.")
+    st.page_link("app.py", label="🔐 Go to Login")
+    st.stop()
 
 # -------------------------------------------------
 # PAGE CONFIG

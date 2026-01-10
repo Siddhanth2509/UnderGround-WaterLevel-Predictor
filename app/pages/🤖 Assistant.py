@@ -1,7 +1,10 @@
 import streamlit as st
 import pandas as pd
 import time
-
+if not st.session_state.get("is_authenticated"):
+    st.warning("Please log in first.")
+    st.page_link("app.py", label="🔐 Go to Login")
+    st.stop()
 # -------------------------------------------------
 # PAGE CONFIG
 # -------------------------------------------------
