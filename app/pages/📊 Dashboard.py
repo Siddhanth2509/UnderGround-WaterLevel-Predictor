@@ -4,6 +4,8 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import os
+from utils.floating_assistant import render_floating_assistant
+
 
 # -------------------------------------------------
 # Page config
@@ -362,3 +364,4 @@ st.markdown("""
 © 2026 Groundwater Intelligence Platform · Feedback welcome
 </div>
 """, unsafe_allow_html=True)
+render_floating_assistant("dashboard")

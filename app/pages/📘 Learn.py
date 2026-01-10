@@ -2,6 +2,8 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from utils.floating_assistant import render_floating_assistant
+
 
 # ================= PAGE CONFIG =================
 st.set_page_config(
@@ -160,6 +162,20 @@ window.addEventListener("scroll", () => {
 });
 </script>
 """, unsafe_allow_html=True)
+# -------------------------------------------------
+# TOP RIGHT ICONS
+# -------------------------------------------------
+spacer, user_col, theme_col = st.columns([8, 0.6, 0.6])
+
+with user_col:
+    with st.popover("👤"):
+        st.page_link("pages/📊 Dashboard.py", label="📊 Dashboard")
+        st.page_link("pages/🔮 Predict.py", label="🔮 Predict")
+        st.page_link("pages/📘 Learn.py", label="📘 Learn")
+        st.page_link("pages/🤖 Assistant.py", label="🤖 Assistant")
+        st.page_link("pages/👤 Profile.py", label="👤 Profile")
+        st.markdown("---")
+        st.button("🚪 Logout")
 
 # ================= HERO =================
 st.markdown("""
@@ -320,3 +336,4 @@ st.markdown("""
   Built for learning, research, and decision support
 </div>
 """, unsafe_allow_html=True)
+render_floating_assistant("learn")

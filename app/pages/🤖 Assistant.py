@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 import time
 
 # -------------------------------------------------
@@ -11,7 +12,7 @@ st.set_page_config(
 )
 
 # -------------------------------------------------
-# THEME (MATCH APP)
+# THEME
 # -------------------------------------------------
 BG = "#020617"
 CARD = "#0b1220"
@@ -20,12 +21,15 @@ ACCENT = "#4FC3F7"
 SIDEBAR_BG = "#050913"
 
 # -------------------------------------------------
-# GLOBAL STYLES
+# GLOBAL STYLES (HOVER + CINEMATIC)
 # -------------------------------------------------
 st.markdown(f"""
 <style>
 .stApp {{
-    background-color: {BG};
+    background:
+        radial-gradient(1200px 600px at 10% 10%, rgba(79,195,247,0.15), transparent 40%),
+        radial-gradient(1000px 600px at 90% 20%, rgba(99,102,241,0.18), transparent 45%),
+        linear-gradient(180deg, #020617, #030b1c);
     color: {TEXT};
 }}
 
@@ -34,157 +38,249 @@ section[data-testid="stSidebar"] {{
     width: 220px;
     background: {SIDEBAR_BG};
     transition: all 0.35s ease;
-    border-right: 1px solid rgba(255,255,255,0.08);
 }}
 section[data-testid="stSidebar"]:hover {{
     width: 240px;
 }}
-section[data-testid="stSidebar"] a {{
+
+section[data-testid="stSidebar"] button {{
+    width: 100%;
     border-radius: 10px;
-    margin: 6px 8px;
-    padding: 12px 16px;
-    font-size: 15px;
+    margin: 6px 0;
+    padding: 10px 14px;
+    font-size: 14px;
     transition: all 0.3s ease;
 }}
-section[data-testid="stSidebar"] a:hover {{
+
+section[data-testid="stSidebar"] button:hover {{
     background: rgba(79,195,247,0.18);
-    transform: translateX(6px) scale(1.02);
+    transform: translateX(6px) scale(1.03);
+    box-shadow: 0 0 18px rgba(79,195,247,0.35);
 }}
+
 section[data-testid="stSidebar"] * {{
     color: {TEXT};
 }}
 
-/* ================= ROBOT HERO ================= */
-.robot-wrap {{
-    text-align: center;
-    margin: 30px 0 10px 0;
+/* ================= CHAT ================= */
+.chat-msg {{
+    padding: 18px 22px;
+    border-radius: 18px;
+    margin: 14px 0;
+    font-size: 1.15rem;
+    line-height: 1.65;
+    animation: slideUp 0.4s ease;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
 }}
+
+.chat-msg:hover {{
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(79,195,247,0.25);
+}}
+
+@keyframes slideUp {{
+    from {{ opacity: 0; transform: translateY(14px); }}
+    to {{ opacity: 1; transform: translateY(0); }}
+}}
+
+.user {{ background: rgba(79,195,247,0.22); }}
+.bot {{ background: rgba(255,255,255,0.08); }}
+
+/* ================= ROBOT ================= */
 .robot {{
     width: 160px;
     margin: auto;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(79,195,247,0.35), transparent 65%);
-    box-shadow: 0 0 60px rgba(79,195,247,0.45);
-    animation: floatBot 4.5s ease-in-out infinite;
+    box-shadow: 0 0 80px rgba(79,195,247,0.45);
+    animation: float 4.5s ease-in-out infinite;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
 }}
-@keyframes floatBot {{
-    0% {{ transform: translateY(0); }}
+
+.robot:hover {{
+    transform: scale(1.07);
+    box-shadow: 0 0 110px rgba(79,195,247,0.75);
+}}
+
+@keyframes float {{
     50% {{ transform: translateY(-14px); }}
-    100% {{ transform: translateY(0); }}
+}}
+
+/* ================= FOOTER ================= */
+.footer {{
+    margin-top: 80px;
+    text-align: center;
+    opacity: 0.75;
+    font-size: 14px;
 }}
 </style>
 """, unsafe_allow_html=True)
 
 # -------------------------------------------------
-# HERO
+# TOP RIGHT ICONS
 # -------------------------------------------------
-st.markdown("""
-<div class="robot-wrap">
-  <div class="robot">
-    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png" width="160">
-  </div>
-  <h1 style="font-size:40px;font-weight:900;margin-top:16px;">
-    Groundwater AI Assistant
-  </h1>
-  <p style="max-width:720px;margin:auto;">
-    An NLP-powered assistant explaining groundwater data,
-    machine learning predictions, and decision insights.
-  </p>
-</div>
-""", unsafe_allow_html=True)
+spacer, user_col, theme_col = st.columns([8, 0.6, 0.6])
+
+with user_col:
+    with st.popover("👤"):
+        st.page_link("pages/📊 Dashboard.py", label="📊 Dashboard")
+        st.page_link("pages/🔮 Predict.py", label="🔮 Predict")
+        st.page_link("pages/📘 Learn.py", label="📘 Learn")
+        st.page_link("pages/🤖 Assistant.py", label="🤖 Assistant")
+        st.page_link("pages/👤 Profile.py", label="👤 Profile")
+        st.markdown("---")
+        st.button("🚪 Logout")
 
 # -------------------------------------------------
 # SESSION STATE
 # -------------------------------------------------
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+if "chat_sessions" not in st.session_state:
+    st.session_state.chat_sessions = {"Chat 1": []}
+
+if "active_chat" not in st.session_state:
+    st.session_state.active_chat = "Chat 1"
+
+if "uploaded_context" not in st.session_state:
+    st.session_state.uploaded_context = ""
 
 # -------------------------------------------------
-# NLP INTENT ENGINE
+# SIDEBAR – CHAT HISTORY + DELETE
 # -------------------------------------------------
-def detect_intent(text: str) -> str:
+st.sidebar.markdown("## 💬 Chat History")
+
+to_delete = None
+
+for chat_name in list(st.session_state.chat_sessions.keys()):
+    col1, col2 = st.sidebar.columns([4, 1])
+
+    with col1:
+        if st.button(chat_name, key=f"open_{chat_name}"):
+            st.session_state.active_chat = chat_name
+
+    with col2:
+        if st.button("🗑", key=f"del_{chat_name}"):
+            to_delete = chat_name
+
+if to_delete:
+    del st.session_state.chat_sessions[to_delete]
+    if not st.session_state.chat_sessions:
+        st.session_state.chat_sessions = {"Chat 1": []}
+        st.session_state.active_chat = "Chat 1"
+    else:
+        st.session_state.active_chat = list(st.session_state.chat_sessions.keys())[0]
+    st.rerun()
+
+if st.sidebar.button("➕ New Chat"):
+    new_name = f"Chat {len(st.session_state.chat_sessions) + 1}"
+    st.session_state.chat_sessions[new_name] = []
+    st.session_state.active_chat = new_name
+    st.rerun()
+
+st.sidebar.markdown("---")
+st.sidebar.markdown("## 📎 Upload File")
+
+uploaded = st.sidebar.file_uploader(
+    "Upload CSV or TXT file",
+    type=["csv", "txt"]
+)
+
+if uploaded:
+    if uploaded.name.endswith(".csv"):
+        df = pd.read_csv(uploaded)
+        st.session_state.uploaded_context = df.head().to_string()
+    elif uploaded.name.endswith(".txt"):
+        st.session_state.uploaded_context = uploaded.read().decode("utf-8")[:2000]
+
+# -------------------------------------------------
+# HERO
+# -------------------------------------------------
+st.markdown("""
+<div style="text-align:center;margin-top:30px;">
+  <img class="robot" src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png">
+  <h1 style="font-size:42px;font-weight:900;">Groundwater AI Assistant</h1>
+  <p>Ask questions about the project, dataset, model, predictions, or uploaded files.</p>
+</div>
+""", unsafe_allow_html=True)
+
+# -------------------------------------------------
+# NLP ENGINE
+# -------------------------------------------------
+def detect_intent(text):
     t = text.lower()
-    if any(k in t for k in ["dataset", "dwlr", "data"]):
+    if "dataset" in t or "csv" in t:
         return "dataset"
-    if any(k in t for k in ["model", "ml", "algorithm"]):
+    if "model" in t or "ml" in t:
         return "model"
-    if any(k in t for k in ["prediction", "depth", "result"]):
+    if "prediction" in t:
         return "prediction"
-    if any(k in t for k in ["limit", "assumption", "reliable"]):
-        return "limits"
-    if any(k in t for k in ["future", "scope", "next"]):
-        return "future"
+    if "file" in t or "upload" in t:
+        return "file"
     return "general"
 
-def generate_reply(intent: str) -> str:
-    responses = {
-        "dataset": (
-            "The model is trained on DWLR (Digital Water Level Recorder) data from India (2023). "
-            "It captures rainfall, temperature, pH, dissolved oxygen, seasonality, "
-            "and groundwater depth."
-        ),
-        "model": (
-            "This system uses supervised machine learning regression. "
-            "It learns patterns between environmental variables rather than memorizing past values."
-        ),
-        "prediction": (
-            "Predictions represent groundwater depth below ground surface (meters). "
-            "Lower values indicate safer availability; higher values indicate stressed conditions."
-        ),
-        "limits": (
-            "The model is best suited for shallow aquifers (~2–5 m). "
-            "It is designed for decision support, not as a real-time sensor replacement."
-        ),
-        "future": (
-            "Future scope includes multi-region models, deeper aquifer layers, "
-            "seasonal forecasting, and satellite + IoT integration."
-        ),
-        "general": (
-            "I can explain the dataset, model logic, prediction meaning, "
-            "limitations, or future scope of this groundwater intelligence system."
+def generate_reply(prompt):
+    intent = detect_intent(prompt)
+
+    if intent == "file" and st.session_state.uploaded_context:
+        return (
+            "Here is a preview from the uploaded file:\n\n"
+            f"{st.session_state.uploaded_context[:600]}"
         )
-    }
-    return responses[intent]
+
+    if intent == "dataset":
+        return (
+            "This project uses DWLR 2023 groundwater data including rainfall, "
+            "temperature, pH, dissolved oxygen, and groundwater depth."
+        )
+
+    if intent == "model":
+        return (
+            "The model is a supervised machine learning regression system that "
+            "learns patterns between environmental variables and groundwater depth."
+        )
+
+    if intent == "prediction":
+        return (
+            "Predictions represent groundwater depth below ground surface. "
+            "Higher values indicate stressed groundwater conditions."
+        )
+
+    return (
+        "I can help explain the dataset, model logic, predictions, limitations, "
+        "or answer questions based on uploaded CSV or TXT files."
+    )
 
 # -------------------------------------------------
-# CHAT HISTORY (REAL CHAT UI)
+# CHAT DISPLAY
 # -------------------------------------------------
-for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+messages = st.session_state.chat_sessions[st.session_state.active_chat]
+
+for msg in messages:
+    cls = "user" if msg["role"] == "user" else "bot"
+    icon = "🧑" if msg["role"] == "user" else "🤖"
+    st.markdown(
+        f"<div class='chat-msg {cls}'>{icon} {msg['content']}</div>",
+        unsafe_allow_html=True
+    )
 
 # -------------------------------------------------
-# CHAT INPUT (PINNED BOTTOM)
+# CHAT INPUT
 # -------------------------------------------------
-user_prompt = st.chat_input("Ask me about the groundwater project…")
+user_prompt = st.chat_input("Ask something…")
 
 if user_prompt:
-    # User message
-    st.session_state.messages.append(
-        {"role": "user", "content": user_prompt}
-    )
-    with st.chat_message("user"):
-        st.markdown(user_prompt)
-
-    # Assistant reply
-    intent = detect_intent(user_prompt)
-    with st.chat_message("assistant"):
-        with st.spinner("Thinking…"):
-            time.sleep(0.4)
-            reply = generate_reply(intent)
-            st.markdown(reply)
-
-    st.session_state.messages.append(
-        {"role": "assistant", "content": reply}
-    )
+    messages.append({"role": "user", "content": user_prompt})
+    with st.spinner("Thinking…"):
+        time.sleep(0.35)
+        reply = generate_reply(user_prompt)
+    messages.append({"role": "assistant", "content": reply})
+    st.rerun()
 
 # -------------------------------------------------
 # FOOTER
 # -------------------------------------------------
 st.markdown("""
-<div style="margin-top:80px;text-align:center;opacity:0.7;font-size:14px;">
-This assistant demonstrates <strong>NLP intent detection</strong> and
-<strong>human–AI interaction</strong> for groundwater decision support.<br>
+<div class="footer">
+🤖 This assistant supports project explanation, dataset understanding,
+model interpretation, and file-based Q&A.<br>
 © 2026 Groundwater Intelligence Platform
 </div>
 """, unsafe_allow_html=True)
