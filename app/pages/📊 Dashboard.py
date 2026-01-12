@@ -9,9 +9,7 @@ if not st.session_state.get("is_authenticated"):
     st.warning("Please log in first.")
     st.page_link("app.py", label="🔐 Go to Login")
     st.stop()
-import sys
-st.write("Python:", sys.version)
-st.write("Installed packages:", sys.modules.keys())
+
 
 # -------------------------------------------------
 # Page config
