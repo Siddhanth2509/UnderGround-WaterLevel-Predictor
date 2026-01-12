@@ -2,7 +2,7 @@
 ### AI-Driven Groundwater Prediction & Decision Support System
 
 🚀 **Live Streamlit App**  
-👉 https://groundwater-intelligence.streamlit.app  
+👉 https://underground-intelligence.streamlit.app/ 
 
 ---
 
@@ -34,7 +34,6 @@ This platform offers a **data-driven early-indicator system** by learning patter
 
 ## 🧠 System Architecture
 
-```mermaid
 flowchart TD
     A[Environmental & Water Data] --> B[Preprocessing & Feature Engineering]
     B --> C[ML Regression Model]
