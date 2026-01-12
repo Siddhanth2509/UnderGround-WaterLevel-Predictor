@@ -58,7 +58,7 @@ def render_floating_assistant(page: str):
 
     # ---------- BUBBLE ----------
     st.sidebar.markdown("<div class='assistant-bubble'>", unsafe_allow_html=True)
-    with st.sidebar.popover("🤖 Assistant"):
+    with st.sidebar.popover("🤖 Page Info."):
         st.markdown(help_text.get(page, "Assistant help"))
         st.caption("Context-aware quick help")
     st.sidebar.markdown("</div>", unsafe_allow_html=True)

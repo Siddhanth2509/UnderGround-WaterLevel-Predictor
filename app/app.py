@@ -73,12 +73,14 @@ for k, v in {
     st.session_state.setdefault(k, v)
 
 # -------------------------------------------------
-# STYLES
+# STYLES (HOVER EFFECT ADDED)
 # -------------------------------------------------
 st.markdown("""
 <style>
+/* Hide sidebar */
 section[data-testid="stSidebar"] { display: none !important; }
 
+/* Background */
 .stApp {
     background:
         radial-gradient(900px 600px at 20% 18%, rgba(79,195,247,0.22), transparent 45%),
@@ -87,11 +89,35 @@ section[data-testid="stSidebar"] { display: none !important; }
     color: #E5E7EB;
 }
 
+/* Auth card */
 .auth-card {
     background: rgba(11,18,32,0.96);
     border-radius: 26px;
     padding: 44px;
     box-shadow: 0 45px 140px rgba(0,0,0,0.8);
+}
+
+/* Title hover animation */
+.auth-title {
+    font-size: 42px;
+    font-weight: 900;
+    display: inline-block;
+    transition: all 0.4s ease;
+    cursor: default;
+}
+
+.auth-title:hover {
+    transform: translateY(-3px) scale(1.03);
+    text-shadow:
+        0 0 25px rgba(79,195,247,0.9),
+        0 0 50px rgba(79,195,247,0.6);
+}
+
+/* Subtitle */
+.auth-sub {
+    font-size: 18px;
+    opacity: 0.8;
+    margin-bottom: 28px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -103,8 +129,10 @@ if not st.session_state.is_authenticated:
 
     st.markdown("""
     <div class="auth-card">
-        <h1>🌊 Groundwater Intelligence</h1>
-        <p>AI-driven groundwater prediction & decision support</p>
+        <div class="auth-title">🌊 Groundwater Intelligence</div>
+        <div class="auth-sub">
+            AI-driven groundwater prediction & decision support platform
+        </div>
     """, unsafe_allow_html=True)
 
     tabs = st.tabs(["🔐 Login", "📝 Sign Up", "🛠 Admin", "🚀 Demo"])
@@ -178,5 +206,8 @@ if not st.session_state.is_authenticated:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
+# -------------------------------------------------
+# AUTHENTICATED
+# -------------------------------------------------
 else:
     redirect_with_loader()

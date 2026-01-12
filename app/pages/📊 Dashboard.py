@@ -21,21 +21,29 @@ st.set_page_config(
 
 with st.sidebar:
     st.markdown("---")
+
     st.markdown(
         f"""
         <div style="
-            padding:12px;
+            padding:14px;
             border-radius:14px;
             background:#0b1220;
             box-shadow:0 0 18px rgba(79,195,247,0.35);
             text-align:center;
+            margin-bottom:12px;
         ">
-            <strong>{st.session_state.user['name']}</strong><br>
-            <span style="opacity:0.7">{st.session_state.user['role']}</span>
+            <strong style="font-size:16px;">
+                {st.session_state.user['name']}
+            </strong><br>
+            <span style="opacity:0.7;font-size:13px;">
+                {st.session_state.user['role']}
+            </span>
         </div>
         """,
         unsafe_allow_html=True
     )
+
+    st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
 
     if st.button("🚪 Logout"):
         st.session_state.clear()
@@ -169,6 +177,48 @@ section[data-testid="stSidebarNav"] {{
 
 <div class="glow"></div>
 """, unsafe_allow_html=True)
+
+if st.session_state.get("is_admin"):
+    with st.expander("🛠 Admin Panel"):
+        st.markdown("### 👥 Registered Users")
+
+        import json
+        import os
+
+        USERS_PATH = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            "data",
+            "users.json"
+        )
+
+        # Ensure data directory & file exist
+        os.makedirs(os.path.dirname(USERS_PATH), exist_ok=True)
+
+        if not os.path.exists(USERS_PATH):
+            with open(USERS_PATH, "w") as f:
+                json.dump({}, f)
+
+        # Safe load
+        with open(USERS_PATH, "r") as f:
+            users = json.load(f)
+
+        # Metrics
+        st.metric("👥 Total Registered Users", len(users))
+
+        if not users:
+            st.info("No registered users yet.")
+        else:
+            for email, u in users.items():
+                st.markdown(
+                    f"""
+                    **{u.get('name', 'Unknown User')}**  
+                    📧 {email}  
+                    🎭 {u.get('role', 'N/A')}  
+                    🕒 Last login: {u.get('last_login', 'Not available')}
+                    ---
+                    """,
+                    unsafe_allow_html=True
+                )
 
 # -------------------------------------------------
 # TOP RIGHT ICONS
