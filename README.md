@@ -1,163 +1,246 @@
-# Underground Water Level Predictor
+🌍 Groundwater Intelligence Platform
+AI-Driven Groundwater Prediction & Decision Support System
 
-## 📌 Overview
-This project is a machine learning–based system designed to predict **groundwater levels** using historical environmental data. It focuses on **localized, short-term prediction and trend analysis**, supporting early awareness of groundwater stress and encouraging preventive water resource planning.
+🔗 Live App (Streamlit Cloud):
+👉[ https://groundwater-intelligence.streamlit.app](https://underground-intelligence.streamlit.app/)
 
-The project follows a clean, modular ML pipeline and is designed to scale with additional data sources.
+📌 Overview
 
----
+Groundwater Intelligence Platform is a full-stack machine learning–powered web application designed to predict, visualize, and analyze shallow groundwater levels using environmental and water-quality indicators.
 
-## 🎯 Problem Statement
-Groundwater depletion often occurs gradually and remains unnoticed until severe shortages arise. Large-scale solutions like water pipelines are expensive and reactive. This project aims to provide a **data-driven early indicator** by analyzing how environmental factors affect groundwater levels.
+Unlike notebook-only ML projects, this system delivers a production-ready AI product featuring:
 
----
+Secure authentication
 
-## 🧠 Solution Approach
-The system:
-- Cleans and preprocesses raw groundwater data
-- Engineers time-based and environmental features
-- Trains and evaluates regression models using time-aware validation
-- Selects the most reliable model
-- Provides predictions for new inputs through a reusable interface
+Role-based access (User / Demo / Admin)
 
----
+Interactive 3D visualizations
 
-## ⚙️ Features
-- Robust preprocessing pipeline
-- Time-based train–test split
-- Model comparison (baseline vs advanced)
-- Evaluation using RMSE, MAE, and R²
-- Prediction module for real-world usage
-- Streamlit-ready architecture
-- Scalable design for multi-year and multi-region data
+Cinematic UI/UX
 
----
+Admin user management
 
-## 📁 Project Structure
-UnderGround-WaterLevel-Predictor/
-│
-├── data/
-│ └── DWLR_Dataset_2023.csv
-│
-├── src/
-│ ├── preprocessing.py # Data cleaning & feature engineering
-│ ├── train_model.py # Model training & evaluation
-│ └── predict.py # Model inference
-│
-├── model/
-│ └── groundwater_model.pkl # Saved trained model
-│
-├── app/
-│ └── streamlit_app.py # Frontend (Phase 1)
-│
-├── README.md
-├── requirements.txt
-└── .gitignore
+Cloud deployment
 
----
+It enables early detection of groundwater stress, helping researchers, planners, and policymakers make informed decisions before critical depletion occurs.
 
-## 🧪 Model Training & Evaluation
+🎯 Problem Statement
 
-Example results:
+Groundwater depletion is:
 
-Linear Regression
+Gradual
 
-RMSE: 0.153
-MAE : 0.143
-R² : -0.126
+Invisible
 
-Random Forest
+Detected too late
 
-RMSE: 0.315
-MAE : 0.280
-R² : -3.774
+Large infrastructure solutions are expensive and reactive.
+This project provides a data-driven early-warning system by learning relationships between environmental factors and groundwater depth.
 
+🧠 Solution Architecture
 
-A simpler model generalized better due to limited and noisy environmental data.
+End-to-end AI system, not just a model.
 
----
-## ▶️ How to Run
+Raw Environmental Data
+        ↓
+Preprocessing & Feature Engineering
+        ↓
+ML Regression Model
+        ↓
+Saved Inference Pipeline
+        ↓
+Secure Streamlit Web App
+        ↓
+Visualization • Prediction • Insights
 
-### Train the model
-```bash
-python src/train_model.py
+⚙️ Core Features
+🔐 Authentication & Roles
 
-➡️ Linear Regression was selected as it generalized better on limited and noisy environmental data.
+Login / Signup system
 
-▶️ How to Run the Project
+Admin master access
 
-1️⃣ Install dependencies
-pip install -r requirements.txt
+Demo mode for recruiters
 
+Role-based UI personalization
 
-2️⃣ Train the model
-python src/train_model.py
+📊 Dashboard
 
+Prediction trend with confidence band
 
-This will:
+KPI cards (status, region, model health)
 
-Train the model
+Interactive charts
 
-Save the trained model and scaler in the model/ directory
+3D groundwater & aquifer surfaces
 
-3️⃣ Run prediction
-python src/predict.py
+Persistent user context
 
+🔮 Prediction Engine
 
-Example output:
+Real-time groundwater depth prediction
 
-Predicted Groundwater Level: 3.541 meters
+Uses:
 
-🎛️ Expected User Inputs (for UI)
+Temperature
 
-The prediction system is designed to work with:
+Rainfall
 
-Date (for seasonal features)
+pH
+
+Dissolved Oxygen
+
+Seasonal features
+
+3D animated subsurface visualization
+
+Status classification (Safe / Moderate / Critical)
+
+📘 Learn (Cinematic Scroll)
+
+Story-driven explanation of groundwater crisis
+
+Visual learning sections
+
+Educational charts & animations
+
+🤖 Assistant (NLP-Focused)
+
+Context-aware chatbot
+
+Chat history persistence
+
+File & dataset discussion support
+
+Designed to demonstrate NLP integration skills
+
+👤 Profile
+
+Persistent user profile
+
+Usage metrics (sessions, predictions)
+
+Editable details
+
+Avatar support
+
+🛠 Admin Panel
+
+View all registered users
+
+Reset passwords (on request)
+
+Add / remove users
+
+Monitor last login & activity
+
+Secure admin-only controls
+
+📈 Model Training & Evaluation
+
+The model focuses on short-term, localized groundwater depth prediction.
+
+Models Evaluated
+Model	RMSE	MAE	R²
+Linear Regression	0.153	0.143	−0.126
+Random Forest	0.315	0.280	−3.774
+
+➡️ Linear Regression generalized better due to limited and noisy environmental data and was selected for deployment.
+
+🎛️ Expected Inputs
+
+The prediction system works with real-world measurable parameters:
+
+Month (seasonality)
 
 Temperature (°C)
 
 Rainfall (mm)
 
-pH value
+pH level
 
 Dissolved Oxygen (mg/L)
 
-These inputs reflect real-world measurable environmental conditions.
+📁 Project Structure
+UnderGround-WaterLevel-Predictor/
+│
+├── app/
+│   ├── app.py                # Login / Signup / Admin / Demo
+│   ├── pages/
+│   │   ├── 📊 Dashboard.py
+│   │   ├── 🔮 Predict.py
+│   │   ├── 📘 Learn.py
+│   │   ├── 🤖 Assistant.py
+│   │   └── 👤 Profile.py
+│   └── utils/
+│       └── floating_assistant.py
+│
+├── src/
+│   ├── preprocessing.py
+│   ├── train_model.py
+│   └── predict.py
+│
+├── data/
+│   └── DWLR_Dataset_2023.csv
+│
+├── model/
+│   ├── groundwater_model.pkl
+│   ├── scaler.pkl
+│   └── imputer.pkl
+│
+├── requirements.txt
+├── .gitignore
+└── README.md
+
+▶️ Running Locally
+1️⃣ Install dependencies
+pip install -r requirements.txt
+
+2️⃣ Train model (optional)
+python src/train_model.py
+
+3️⃣ Run the app
+streamlit run app/app.py
 
 ⚠️ Important Notes & Limitations
 
 Predictions are data-distribution dependent
 
-The model is valid only for regions with similar environmental characteristics as the training dataset
+Best suited for shallow aquifers (~2–5m)
 
-This project focuses on trend estimation, not causal hydrological modeling
+Not intended for deep confined aquifers or coastal saline zones
 
-Retraining is required when new regions or significantly different data are introduced
+Retraining required for new regions or long-term forecasting
 
 🔮 Future Enhancements
 
-Streamlit-based interactive web interface
+Multi-region groundwater models
 
-Confidence intervals for predictions
+Long-term forecasting
 
-Lag-based and rolling-window features
+Satellite & rainfall API integration
 
-Region-wise or aquifer-wise model versions
+Automated alert system
 
-Integration with additional environmental datasets
+Mobile-optimized UI
 
-📚 Learning Outcome
+Advanced NLP reasoning in Assistant
 
-This project demonstrates:
+📚 What This Project Demonstrates
 
 End-to-end ML pipeline design
 
-Separation of training and inference logic
+Secure authentication & role-based systems
 
-Handling real-world preprocessing issues
+Production Streamlit architecture
 
-Reproducible and deployable ML workflows
+Cloud deployment & debugging
+
+UI/UX engineering for AI products
+
+Real-world ML tradeoff decisions
 
 👤 Author
 
 Siddhanth Sharma
+Machine Learning & AI Enthusiast
