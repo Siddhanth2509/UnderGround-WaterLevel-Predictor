@@ -73,14 +73,12 @@ for k, v in {
     st.session_state.setdefault(k, v)
 
 # -------------------------------------------------
-# STYLES (HOVER EFFECT ADDED)
+# STYLES
 # -------------------------------------------------
 st.markdown("""
 <style>
-/* Hide sidebar */
 section[data-testid="stSidebar"] { display: none !important; }
 
-/* Background */
 .stApp {
     background:
         radial-gradient(900px 600px at 20% 18%, rgba(79,195,247,0.22), transparent 45%),
@@ -89,7 +87,6 @@ section[data-testid="stSidebar"] { display: none !important; }
     color: #E5E7EB;
 }
 
-/* Auth card */
 .auth-card {
     background: rgba(11,18,32,0.96);
     border-radius: 26px;
@@ -97,13 +94,11 @@ section[data-testid="stSidebar"] { display: none !important; }
     box-shadow: 0 45px 140px rgba(0,0,0,0.8);
 }
 
-/* Title hover animation */
 .auth-title {
     font-size: 42px;
     font-weight: 900;
     display: inline-block;
     transition: all 0.4s ease;
-    cursor: default;
 }
 
 .auth-title:hover {
@@ -113,7 +108,6 @@ section[data-testid="stSidebar"] { display: none !important; }
         0 0 50px rgba(79,195,247,0.6);
 }
 
-/* Subtitle */
 .auth-sub {
     font-size: 18px;
     opacity: 0.8;
@@ -153,7 +147,21 @@ if not st.session_state.is_authenticated:
             else:
                 st.error("Invalid credentials")
 
-        st.caption("Forgot password? Contact admin to reset securely.")
+        st.markdown("---")
+        st.caption("Forgot your password? Send a secure request to admin.")
+
+        if st.button("🔐 Forgot Password"):
+            if not email:
+                st.warning("Please enter your email first.")
+            elif email not in users:
+                st.error("No account found with this email.")
+            else:
+                if users[email].get("reset_requested"):
+                    st.info("Password reset already requested. Please wait for admin approval.")
+                else:
+                    users[email]["reset_requested"] = True
+                    save_users(users)
+                    st.success("Password reset request sent to admin.")
 
     # ---------------- SIGN UP ----------------
     with tabs[1]:
@@ -177,7 +185,8 @@ if not st.session_state.is_authenticated:
                     "email": email,
                     "password": hash_password(password),
                     "name": name,
-                    "role": role
+                    "role": role,
+                    "reset_requested": False
                 }
                 save_users(users)
                 st.session_state.is_authenticated = True

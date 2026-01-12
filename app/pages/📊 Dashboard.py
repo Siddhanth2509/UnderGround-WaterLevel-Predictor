@@ -242,47 +242,177 @@ section[data-testid="stSidebarNav"] {{
 <div class="glow"></div>
 """, unsafe_allow_html=True)
 
-if st.session_state.get("is_admin"):
-    with st.expander("🛠 Admin Panel"):
-        st.markdown("### 👥 Registered Users")
 
+#-----------------------------------------------------------------------
+# ADMIN SECTION BLOCK
+#-----------------------------------------------------------------------
+
+if st.session_state.get("is_admin") and not st.session_state.get("demo_mode"):
+    with st.expander("🛠 Admin Panel"):
         import json
         import os
+        import hashlib
 
+        # ---------- Styles ----------
+        st.markdown("""
+        <style>
+        .admin-card {
+            background:#0b1220;
+            border-radius:18px;
+            padding:20px 22px;
+            margin-bottom:20px;
+            box-shadow:0 12px 40px rgba(0,0,0,0.4);
+            transition:all 0.35s ease;
+        }
+        .admin-card:hover {
+            transform:translateY(-4px);
+            box-shadow:0 30px 70px rgba(79,195,247,0.25);
+        }
+        .admin-title {
+            font-size:18px;
+            font-weight:800;
+            margin-bottom:12px;
+        }
+        .admin-badge {
+            display:inline-block;
+            padding:4px 10px;
+            border-radius:999px;
+            font-size:12px;
+            font-weight:600;
+            margin-left:6px;
+        }
+        .pending {
+            color:#F59E0B;
+            border:1px solid #F59E0B;
+        }
+        .approved {
+            color:#22C55E;
+            border:1px solid #22C55E;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+        # ---------- Load users ----------
         USERS_PATH = os.path.join(
             os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
             "data",
             "users.json"
         )
 
-        # Ensure data directory & file exist
         os.makedirs(os.path.dirname(USERS_PATH), exist_ok=True)
-
         if not os.path.exists(USERS_PATH):
             with open(USERS_PATH, "w") as f:
                 json.dump({}, f)
 
-        # Safe load
         with open(USERS_PATH, "r") as f:
             users = json.load(f)
 
-        # Metrics
-        st.metric("👥 Total Registered Users", len(users))
+        # ---------- Overview ----------
+        reset_requests = {
+            k: v for k, v in users.items()
+            if v.get("reset_requested", False)
+        }
 
-        if not users:
-            st.info("No registered users yet.")
+        st.markdown("<div class='admin-card'>", unsafe_allow_html=True)
+        st.markdown("<div class='admin-title'>👥 User Overview</div>", unsafe_allow_html=True)
+        c1, c2 = st.columns(2)
+        c1.metric("Total Users", len(users))
+        c2.metric("Reset Requests", len(reset_requests))
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        # ---------- Reset Requests ----------
+        st.markdown("<div class='admin-card'>", unsafe_allow_html=True)
+        st.markdown("<div class='admin-title'>🔐 Password Reset Requests</div>", unsafe_allow_html=True)
+
+        if not reset_requests:
+            st.success("No pending password reset requests 🎉")
         else:
-            for email, u in users.items():
-                st.markdown(
-                    f"""
-                    **{u.get('name', 'Unknown User')}**  
-                    📧 {email}  
-                    🎭 {u.get('role', 'N/A')}  
-                    🕒 Last login: {u.get('last_login', 'Not available')}
-                    ---
-                    """,
-                    unsafe_allow_html=True
-                )
+            selected_user = st.selectbox(
+                "Select user with request",
+                list(reset_requests.keys()),
+                format_func=lambda x: f"{users[x].get('name')} ({x})"
+            )
+
+            u = users[selected_user]
+
+            st.markdown(
+                f"""
+                <strong>Name:</strong> {u.get('name')}<br>
+                <strong>Email:</strong> {selected_user}<br>
+                <strong>Role:</strong> {u.get('role')}<br>
+                <span class="admin-badge pending">RESET REQUESTED</span>
+                """,
+                unsafe_allow_html=True
+            )
+
+            new_pass = st.text_input("New password", type="password")
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                if st.button("Approve & Reset"):
+                    if new_pass:
+                        users[selected_user]["password"] = hashlib.sha256(
+                            new_pass.encode()
+                        ).hexdigest()
+                        users[selected_user]["reset_requested"] = False
+
+                        with open(USERS_PATH, "w") as f:
+                            json.dump(users, f, indent=4)
+
+                        st.success("Password reset approved and updated")
+                        st.rerun()
+                    else:
+                        st.warning("Password cannot be empty")
+
+            with col2:
+                if st.button("Reject Request"):
+                    users[selected_user]["reset_requested"] = False
+                    with open(USERS_PATH, "w") as f:
+                        json.dump(users, f, indent=4)
+                    st.info("Password reset request rejected")
+                    st.rerun()
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        # ---------- Add User ----------
+        st.markdown("<div class='admin-card'>", unsafe_allow_html=True)
+        st.markdown("<div class='admin-title'>➕ Add New User</div>", unsafe_allow_html=True)
+
+        new_name = st.text_input("Full Name", key="add_user_name")
+        new_email = st.text_input("Email", key="add_user_email")
+        new_role = st.selectbox(
+            "Role",
+            ["Student", "Researcher", "Analyst", "Recruiter"],
+            key="add_user_role"
+        )
+        new_password = st.text_input(
+            "Password",
+            type="password",
+            key="add_user_password"
+        )
+
+        if st.button("Create User"):
+            if not new_name or not new_email or not new_password:
+                st.warning("All fields are required")
+            elif new_email in users:
+                st.error("User already exists")
+            else:
+                users[new_email] = {
+                    "name": new_name,
+                    "email": new_email,
+                    "role": new_role,
+                    "password": hashlib.sha256(new_password.encode()).hexdigest(),
+                    "reset_requested": False
+                }
+
+                with open(USERS_PATH, "w") as f:
+                    json.dump(users, f, indent=4)
+
+                st.success("User added successfully")
+                st.rerun()
+
+        st.markdown("</div>", unsafe_allow_html=True)
 
 # -------------------------------------------------
 # TOP RIGHT ICONS
