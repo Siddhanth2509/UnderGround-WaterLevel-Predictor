@@ -15,19 +15,81 @@ st.set_page_config(
 with st.sidebar:
     st.markdown("---")
 
+    # -------------------------------
+    # Role badge logic
+    # -------------------------------
+    is_admin = st.session_state.get("is_admin")
+    is_demo = st.session_state.get("demo_mode")
+
+    if is_admin:
+        badge = "🛠 ADMIN"
+        badge_color = "#F43F5E"
+        badge_class = "admin-badge"
+        role_explain = "Administrator: full access to users, analytics, and system controls."
+    elif is_demo:
+        badge = "🧪 DEMO"
+        badge_color = "#22D3EE"
+        badge_class = "demo-badge"
+        role_explain = "Demo mode: limited access for recruiters to explore features safely."
+    else:
+        badge = "👤 USER"
+        badge_color = "#4FC3F7"
+        badge_class = "user-badge"
+        role_explain = "Standard user: can run predictions, explore learning content, and use the assistant."
+
+    # -------------------------------
+    # Styles (hover + pulse)
+    # -------------------------------
     st.markdown(
-        f"""
-        <div style="
+        """
+        <style>
+        .user-card {
             padding:14px;
             border-radius:14px;
             background:#0b1220;
             box-shadow:0 0 18px rgba(79,195,247,0.35);
             text-align:center;
             margin-bottom:12px;
-        ">
+            transition: all 0.35s ease;
+        }
+        .user-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 0 32px rgba(79,195,247,0.6);
+        }
+        .admin-badge {
+            animation: pulseAdmin 2.2s infinite;
+        }
+        @keyframes pulseAdmin {
+            0%   { box-shadow: 0 0 0 rgba(244,63,94,0.0); }
+            50%  { box-shadow: 0 0 18px rgba(244,63,94,0.9); }
+            100% { box-shadow: 0 0 0 rgba(244,63,94,0.0); }
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # -------------------------------
+    # User card
+    # -------------------------------
+    st.markdown(
+        f"""
+        <div class="user-card">
             <strong style="font-size:16px;">
                 {st.session_state.user['name']}
             </strong><br>
+            <span class="{badge_class}" style="
+                display:inline-block;
+                margin-top:6px;
+                padding:4px 10px;
+                border-radius:999px;
+                font-size:12px;
+                font-weight:600;
+                color:{badge_color};
+                border:1px solid {badge_color};
+            ">
+                {badge}
+            </span><br>
             <span style="opacity:0.7;font-size:13px;">
                 {st.session_state.user['role']}
             </span>
@@ -36,12 +98,13 @@ with st.sidebar:
         unsafe_allow_html=True
     )
 
+
+
     st.markdown("<div style='height:10px;'></div>", unsafe_allow_html=True)
 
     if st.button("🚪 Logout"):
         st.session_state.clear()
         st.switch_page("app.py")
-
 # ================= GLOBAL CSS (UNCHANGED) =================
 st.markdown("""
 <style>
